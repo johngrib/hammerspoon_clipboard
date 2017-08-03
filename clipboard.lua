@@ -8,7 +8,9 @@ local lastChange = pasteboard.changeCount()
 local now = lastChange
 local register = {}
 
-local function focusLastFocused()
+local util = {}
+
+function util.focusLastFocused()
     local filter = hs.window.filter
     local lastFocused = filter.defaultCurrentSpace:getWindows(filter.sortByFocusedLast)
     if #lastFocused > 0 then
@@ -16,11 +18,22 @@ local function focusLastFocused()
     end
 end
 
-local chooser = hs.chooser.new(function (choice)
-    if choice then
-        pasteboard.setContents(choice.text)
+local function shiftHistory(text)
+    for key, value in pairs(history) do
+        if value.text == text then
+            local item = table.remove(history, key)
+            return table.insert(history, 1, item)
+        end
     end
-    focusLastFocused()
+end
+
+local chooser = hs.chooser.new(function (choice)
+    if not choice then
+        util.focusLastFocused()
+    end
+    shiftHistory(choice.text)
+    pasteboard.setContents(choice.text)
+    util.focusLastFocused()
     hs.eventtap.keyStroke({"cmd"}, "v")
 end)
 
@@ -66,7 +79,7 @@ function obj.clear()
     history = {}
     now = pasteboard.changeCount()
     chooser:cancel()
-    focusLastFocused()
+    util.focusLastFocused()
 end
 
 function obj.setSize(num)
