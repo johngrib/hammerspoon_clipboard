@@ -49,7 +49,7 @@ function storeCopy()
     local content = pasteboard.getContents()
 
     if #history < 1 or not (history[1].text == content) then
-        table.insert(history, 1, {text = content})
+        table.insert(history, 1, {text = content, subText = 'size: ' .. string.len(content)})
     end
 end
 
