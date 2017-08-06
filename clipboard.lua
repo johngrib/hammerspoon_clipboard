@@ -5,7 +5,6 @@ local pasteboard = require("hs.pasteboard")
 local history = {}
 local historySize = 10
 local lastChange = pasteboard.changeCount()
-local now = lastChange
 local register = {}
 
 local util = {}
@@ -47,18 +46,11 @@ function storeCopy()
 
     clearSizeOver()
 
-    now = pasteboard.changeCount()
-
-    if not (now > lastChange) then
-        return
-    end
-
     local content = pasteboard.getContents()
 
-    if #history < 1 or not (history[#history].text == content) then
+    if #history < 1 or not (history[1].text == content) then
         table.insert(history, 1, {text = content})
     end
-    lastChange = now
 end
 
 copy = hs.hotkey.bind({"cmd"}, "c", function()
@@ -71,13 +63,16 @@ end)
 local obj = {}
 
 function obj.showList()
+    local content = pasteboard.getContents()
+    if #history < 1 or not (history[1].text == content) then
+        table.insert(history, 1, {text = content})
+    end
     chooser:choices(history)
     chooser:show()
 end
 
 function obj.clear()
     history = {}
-    now = pasteboard.changeCount()
     chooser:cancel()
     util.focusLastFocused()
 end
